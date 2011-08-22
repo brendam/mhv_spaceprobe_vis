@@ -17,6 +17,15 @@ Possible formats from the spaceprobe are:
  (~hh:mm) is the estimated closing time
  Note: all time estimates in brackets seem to be rounded to nearest 15 minutes
 
+Ideas to try:
+	1.  transition between symbol and circle
+	2.  transition so data appears gradually onto graph (and maybe older data fades out?)
+	3.  rectangles with length set to predicted open for open events, actual open for close events
+	4.  create datapoints based on open / close pairs
+		for example open is terminated by close, or if a close isn't seen, by the
+		subsequent open and just uses predicted open + any extensions. 
+	5.	Change x axis to be dates, not days
+	6.	Possibly try a spiral display of the timeline
 */
 
 var outputFormat = d3.time.format("%Y %m %d %H:%M:%S");
