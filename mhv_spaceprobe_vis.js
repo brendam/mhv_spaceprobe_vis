@@ -30,7 +30,7 @@ $(document).ready(function() {
 
 // Get latest tweets using jTwitter
 
-	$.jTwitter('makehackvoid', 20, function(data) {
+	$.jTwitter('makehackvoid', 500, function(data) {
 		$('#posts').empty();
 		$('#posts').append('<table id="tweetsTable">');
 		$('#tweetsTable')
@@ -202,6 +202,7 @@ function drawGraph(data) {
 	var graphGroup = daychart.append("svg:g")
 						.attr("transform", "translate(" + padding + ", " + padding + ")");
 	
+// Circles to show the events
 	var circle = graphGroup.selectAll("circle")
 						.data(data);
 	
@@ -212,4 +213,50 @@ function drawGraph(data) {
 		.attr("class", function(d) { return "circle_" + d.tweetType; });
 	
 	circle.exit().remove();
+
+// Symbols to show the events
+	var path = graphGroup.selectAll("path")
+    	.data(data);
+  	path.enter().append("svg:path")
+	    .attr("transform", function(d) { 
+	    		return "translate("  
+	    		+ x(d.tweetDate.getDay() + 1) + "," 
+	    		+ y(new Date(2011, 0, 1, d.tweetDate.getHours(),d.tweetDate.getMinutes())) 
+	    		+ ")"; })
+	    .attr("d", d3.svg.symbol().type(function(d) {return symType(d.tweetType);}).size(20))
+	    .attr("class", function(d) { return "symbol_" + d.tweetType; });
+ 
+	function symType(tweetType) {
+		var symType = "circle";
+		switch (tweetType) 
+		{
+		case "c": 
+			symType = "triangle-up";
+			break;
+		case "o":
+			symType = "triangle-down"
+			break;
+		case "e":
+			symType = "square";
+		}
+		 return(symType);
+	}
+
+// Button to trigger transition between circles and symbols
+// Button is working (tested with "alert") but transitions are not.	
+	d3.select("#daybreakdown button").on("click", function() {
+    daychart.select("circle")
+        .style("opacity", 1)
+      .transition()
+        .duration(750)
+        .style("opacity", 1e-6);
+
+    daychart.select("symbol")
+        .style("opacity", 1)
+        .transition()
+        .duration(750)
+        .style("opacity", 1e-6);
+  });
+	
 }
+

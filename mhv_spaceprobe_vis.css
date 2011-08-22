@@ -11,6 +11,7 @@ h1, h2 {
 table {
 	font-size: 12px;
 	border-collapse:collapse;
+	visibility: hidden;
 }
 
 td {
@@ -27,12 +28,14 @@ td {
 	padding-bottom: 20px;
 }
 
+
 .yticks, .xticks {
   stroke: lightgray;
 }
 
 circle {
 	opacity: 0.5;
+	visibility: hidden;
 }
 
 circle.circle_o {
@@ -50,3 +53,22 @@ circle.circle_e {
     stroke: gray;
 }
 
+path {
+	stroke-width: 1.5px;
+	opacity: 0.5;
+}
+
+path.symbol_c {
+    fill: red;
+    stroke: maroon;
+}
+
+path.symbol_o {
+    fill: lime;
+    stroke: green;
+}
+
+path.symbol_e {
+    fill: lightgray;
+    stroke: gray;
+}
