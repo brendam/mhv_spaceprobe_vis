@@ -1,0 +1,12 @@
+#chart {
+    width: 640px;
+    height: 320px;   
+    border: 1px solid lightgray;
+    font-size: 12px;  
+}   
+#chart .bar {
+    fill: steelblue;
+}          
+#chart .xaxis {
+    stroke: black;
+}
