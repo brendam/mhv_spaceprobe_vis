@@ -79,21 +79,22 @@ function drawGraph(data) {
 	// second version with lots of help from http://www.recursion.org/d3-for-mere-mortals/
 	// Thanks @lof for your d3.js timeline tutorial, I'm finally starting to understand how it works. 
 	var w = 640,
-		h = 320,
-		padding = 40; 
+		h = 450,
+		padding = 50; 
 				
-	// TODO: wondering if there is a way to move the conversion of the tweetDate 
-	// into the hours on 2011/01/01 into the scale instead of doing it when the scale is called?	
+	// define the y scale (note: need to coerce data to 1.1.2011 before scaling)				
 	var y = d3.time.scale()
 		.domain([new Date(2011, 0, 1), new Date(2011, 0, 1, 23, 59)])
 		.range([0, h]); 
+	
+	// define x scale (days of week in current version)	
 	// var x = d3.time.scale().domain([new Date(2011, 0, 1), new Date(2011, 11, 31)]).range([0, width]);
 	var monthNames = ["Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 	var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "help"];
 	var x = d3.scale.linear() 
 		// .domain([0, data.length])
 		.domain([1, 7])
-		.range([20, w - 20]); 
+		.range([padding/2, w - padding/2]); 
 
 	function yAxisLabel(d) {
 		if (d == 12) {
@@ -104,42 +105,47 @@ function drawGraph(data) {
 		}
 		return (d - 12);
 	} 
-	// The labels along the x axis will be positioned on the 15th of the month
-
-
+	
 	function midMonthDates() {
+		// The labels along the x axis will be positioned on the 15th of the month
 		return d3.range(0, 12).map(function(i) {
 			return new Date(2011, i, 15)
 		});
 	}
 
 	function midDayPos() {
+		// day labels for x axis
 		return d3.range(1, 8).map(function(i) {
 			return i
 		});
 	}
 	
-	var chart = 
+	// create the chart
+	var daychart = 
 		d3.select("body").append("svg:svg")
-			.attr("class", "chart")
+			.attr("class", "daychart")
 			.attr("width", w + padding * 2)
-			.attr("height", h + padding * 2); // create a group to hold the axis-related elements
-	
-	var axisGroup = chart
+			.attr("height", h + padding * 2); 
+			
+	// create a group to hold the axis-related elements
+	var axisGroup = daychart
 		.append("svg:g")
-			.attr("transform", "translate(" + padding + "," + padding + ")"); // add the chart axis to the axisGroup
-	
+			.attr("transform", "translate(" + padding + "," + padding + ")"); 
+			
+	// add the chart axis to the axisGroup
 	axisGroup.selectAll(".yTicks")
 		.data(d3.range(0, 24))
 		.enter().append("svg:line")
-			.attr("x1", -5) // Round and add 0.5 to fix anti-aliasing effects
+			.attr("x1", -5) 
+			// Round and add 0.5 to fix anti-aliasing effects
 			.attr("y1", function(d) { return d3.round(y(new Date(2011, 0, 1, d))) + 0.5;})
 			.attr("x2", w + 5)
 			.attr("y2", function(d) { return d3.round(y(new Date(2011, 0, 1, d))) + 0.5;})
 			.attr("stroke", "lightgray")
 			.attr("class", "yTicks");
 			
-	axisGroup.selectAll(".xTicks") //.data(midMonthDates)
+	axisGroup.selectAll(".xTicks") 
+		//.data(midMonthDates)
 		.data(midDayPos)
 		.enter().append("svg:line")
 			.attr("x1", x)
@@ -147,9 +153,12 @@ function drawGraph(data) {
 			.attr("x2", x)
 			.attr("y2", h + 5)
 			.attr("stroke", "lightgray")
-			.attr("class", "yTicks"); // draw the text for the labels
+			.attr("class", "yTicks"); 
+			
+	// draw the text for the labels
 	
-	axisGroup.selectAll("text.xAxisTop") //	.data(midMonthDates)
+	axisGroup.selectAll("text.xAxisTop") 
+	//	.data(midMonthDates)
 		.data(midDayPos)
 		.enter().append("svg:text")
 			.text(function(d, i) { return dayNames[i];})
@@ -165,10 +174,10 @@ function drawGraph(data) {
 			.attr("x", -7)
 			.attr("y", function(d) { return y(new Date(2011, 0, 1, d)); })
 			.attr("dy", "3")
-			.attr("class", "yAxisLeft")
+			.attr("class", "axis yAxisLeft")
 			.attr("text-anchor", "end");
 	
-	var graphGroup = chart.append("svg:g")
+	var graphGroup = daychart.append("svg:g")
 						.attr("transform", "translate(" + padding + ", " + padding + ")");
 	
 	var circle = graphGroup.selectAll("circle")

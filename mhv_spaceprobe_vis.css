@@ -1,12 +1,8 @@
-#chart {
-    width: 640px;
-    height: 320px;   
+.daychart {
     border: 1px solid lightgray;
-    font-size: 12px;  
-}   
-#chart .bar {
-    fill: steelblue;
-}          
-#chart .xaxis {
-    stroke: black;
+}
+
+.axis {
+	font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+	font-size: 12px;
 }
