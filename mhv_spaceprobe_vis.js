@@ -30,44 +30,68 @@ $(document).ready(function() {
 
 // Get latest tweets using jTwitter
 
-	$.jTwitter('makehackvoid', 400, function(data) {
+	$.jTwitter('makehackvoid', 20, function(data) {
 		$('#posts').empty();
+		$('#posts').append('<table id="tweetsTable">');
+		$('#tweetsTable')
+			.append('<tr><th>Time</th><th>Tweet text</th><th>parsed times (close time / actual open period)</th></tr>');
 		$.each(data, function(i, post) { 
-			
-			
 			// only look at tweets that say they came from the Space Probe
 			if (post.source.indexOf("MHV Space Probe") != -1) {
 				var tweetType = "";
 				var tweetDate = new Date(post.created_at);
+				var actualOpenPeriod = "";
+				var closeTimeEstimate = "";
 				textDate = outputFormat(tweetDate);
 				if (post.text.indexOf("is now open") != -1) {
 					tweetType = "o"; // open
+					startEstimate = post.text.indexOf("(~");
+					endEstimate = post.text.indexOf(")");
+					if (startEstimate != -1 && endEstimate != -1 && startEstimate < endEstimate) {
+						closeTimeEstimate = post.text.substring(startEstimate+2, endEstimate); 
+					}
+					
 				} else if (post.text.indexOf("is now closed") != -1) {
 					tweetType = "c"; // closed
+					startOpen = post.text.indexOf("(was open ");
+					endOpen = post.text.indexOf(")");
+					if (startOpen != -1 && endOpen != -1 && startOpen < endOpen) {
+						actualOpenPeriod = post.text.substring(startOpen+("(was open ").length, endOpen); 
+					}
+
 				} else if (post.text.indexOf("will remain open") != -1) {
 					tweetType = "e"; // extend opening time
 				} 
+
+				if (tweetType == "o" || tweetType == "c") {
+					// ignoring extensions for now
 				
-				/*
-				// this code will display all the retrieved tweets
-					$('#posts').append(
-						'<div class="post">'
-						+' <div class="date">'
+					// display the tweets & parsed data
+					$('#tweetsTable').append(
+						'<tr>'
+						+' <td>'
 						+	 tweetDate
-						+' </div>'
-						+'<div class="txt">'
+						+' </td>'
+						+' <td>'
 						+	 post.text
-						+' </div>'
-						+'</div>'
+						+' </td>'
+						+' <td>'
+						+ closeTimeEstimate + " /  " + actualOpenPeriod
+						+' </td>'
+						+'</tr>'
 					);
-				*/
 				
-				var mhv = new Object();
-				mhv.tweetDate = tweetDate;
-				mhv.tweetType = tweetType;
-				newData.push(mhv); 
+					var mhv = new Object();
+					mhv.tweetDate = tweetDate;
+					mhv.tweetType = tweetType;
+					mhv.openEstimate = closeTimeEstimate;
+					mhv.actualOpen = actualOpenPeriod;
+					newData.push(mhv); 
+				}
 			}
 		});
+		
+		$('#posts').append('</table>');
 
 		drawGraph(newData);
 
@@ -79,7 +103,7 @@ function drawGraph(data) {
 	// second version with lots of help from http://www.recursion.org/d3-for-mere-mortals/
 	// Thanks @lof for your d3.js timeline tutorial, I'm finally starting to understand how it works. 
 	var w = 640,
-		h = 450,
+		h = 380,
 		padding = 50; 
 				
 	// define the y scale (note: need to coerce data to 1.1.2011 before scaling)				
@@ -122,7 +146,7 @@ function drawGraph(data) {
 	
 	// create the chart
 	var daychart = 
-		d3.select("body").append("svg:svg")
+		d3.select("#daybreakdown").append("svg:svg")
 			.attr("class", "daychart")
 			.attr("width", w + padding * 2)
 			.attr("height", h + padding * 2); 
@@ -141,7 +165,6 @@ function drawGraph(data) {
 			.attr("y1", function(d) { return d3.round(y(new Date(2011, 0, 1, d))) + 0.5;})
 			.attr("x2", w + 5)
 			.attr("y2", function(d) { return d3.round(y(new Date(2011, 0, 1, d))) + 0.5;})
-			.attr("stroke", "lightgray")
 			.attr("class", "yTicks");
 			
 	axisGroup.selectAll(".xTicks") 
@@ -152,8 +175,7 @@ function drawGraph(data) {
 			.attr("y1", -5)
 			.attr("x2", x)
 			.attr("y2", h + 5)
-			.attr("stroke", "lightgray")
-			.attr("class", "yTicks"); 
+			.attr("class", "xTicks"); 
 			
 	// draw the text for the labels
 	
@@ -187,26 +209,7 @@ function drawGraph(data) {
 		.attr("cy", function(d) { return y(new Date(2011, 0, 1, d.tweetDate.getHours(), d.tweetDate.getMinutes())); })
 		.attr("cx", function(d) { return x(d.tweetDate.getDay() + 1); })
 		.attr("r", 10)
-		.attr("fill-opacity", .5)
-		.style("fill", function(d) { return circleColour(d.tweetType); });
-
-	function circleColour(tweetType) {
-		var colour;
-		switch (tweetType) {
-		case "c":
-			colour = "#990000";
-			break;
-		case "o":
-			colour = "#009900";
-			break;
-		case "e":
-			colour = "#000099";
-			break;
-		default:
-			colour = "#000000";
-		}
-		return colour;
-	}
+		.attr("class", function(d) { return "circle_" + d.tweetType; });
 	
 	circle.exit().remove();
 }
