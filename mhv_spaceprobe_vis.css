@@ -34,8 +34,7 @@ td {
 }
 
 circle {
-	opacity: 0.5;
-	visibility: hidden;
+	opacity: 0;
 }
 
 circle.circle_o {

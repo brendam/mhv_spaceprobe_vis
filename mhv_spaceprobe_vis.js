@@ -18,14 +18,13 @@ Possible formats from the spaceprobe are:
  Note: all time estimates in brackets seem to be rounded to nearest 15 minutes
 
 Ideas to try:
-	1.  transition between symbol and circle
-	2.  transition so data appears gradually onto graph (and maybe older data fades out?)
-	3.  rectangles with length set to predicted open for open events, actual open for close events
-	4.  create datapoints based on open / close pairs
+	1.  transition so data appears gradually onto graph (and maybe older data fades out?)
+	2.  rectangles with length set to predicted open for open events, actual open for close events
+	3.  create datapoints based on open / close pairs
 		for example open is terminated by close, or if a close isn't seen, by the
 		subsequent open and just uses predicted open + any extensions. 
-	5.	Change x axis to be dates, not days
-	6.	Possibly try a spiral display of the timeline
+	4.	Change x axis to be dates, not days
+	5.	Possibly try a spiral display of the timeline
 */
 
 var outputFormat = d3.time.format("%Y %m %d %H:%M:%S");
@@ -41,6 +40,7 @@ $(document).ready(function() {
 
 	$.jTwitter('makehackvoid', 500, function(data) {
 		$('#posts').empty();
+		$('#posts').append('<button>Show data table</button>');
 		$('#posts').append('<table id="tweetsTable">');
 		$('#tweetsTable')
 			.append('<tr><th>Time</th><th>Tweet text</th><th>parsed times (close time / actual open period)</th></tr>');
@@ -252,20 +252,28 @@ function drawGraph(data) {
 	}
 
 // Button to trigger transition between circles and symbols
-// Button is working (tested with "alert") but transitions are not.	
 	d3.select("#daybreakdown button").on("click", function() {
-    daychart.select("circle")
-        .style("opacity", 1)
-      .transition()
-        .duration(750)
-        .style("opacity", 1e-6);
-
-    daychart.select("symbol")
-        .style("opacity", 1)
-        .transition()
-        .duration(750)
-        .style("opacity", 1e-6);
+ 		daychart.selectAll("circle")
+ 			.transition()
+ 				.duration(750)
+ 				.style("opacity", (daychart.selectAll("circle").style("opacity") == 0.5) ? 1e-6 : 0.5 );
+// would like to find a way to avoid selecting the same object a second time in the if test
+// 				.style("opacity", function (d) { return (d.style("opacity") == 0.5) ? 1e-6 : 0.5 });
+		daychart.selectAll("path")
+         	.transition()
+ 	     	  	.duration(750)
+ 				.style("opacity", (daychart.selectAll("path").style("opacity") == 0.5) ? 1e-6 : 0.5 );
+	   d3.select("#daybreakdown button")
+	   		.text((d3.select("#daybreakdown button").text() == "Show symbols") ? "Show circles" : "Show symbols");
   });
+  
+// Button to show data
+	d3.select("#posts button").on("click", function() {
+		d3.select("#posts table")
+			.style("visibility", (d3.select("#posts table").style("visibility") == "hidden") ? "visible" : "hidden");
+		d3.select("#posts button")
+			.text((d3.select("#posts table").style("visibility") == "visible") ? "Hide data table" : "Show data table");
+	});
 	
 }
 
