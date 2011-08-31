@@ -9,4 +9,6 @@ This project uses:
 * [jtwitter](http://plugins.jquery.com/project/jtwitter)
 * [jquery](http://jquery.com/)
 
+Feedback/suggestions very welcome!
+
 More information about the MHV Space Probe is available here http://www.makehackvoid.com/projects/space-probe/
