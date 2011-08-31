@@ -52,6 +52,25 @@ circle.circle_e {
     stroke: gray;
 }
 
+rect {
+	opacity: 0.2;
+}
+
+rect.rect_o {
+    fill: lime;
+    stroke: green;
+}
+
+rect.rect_c {
+    fill: red;
+    stroke: maroon;
+}
+
+rect.rect_e {
+    fill: lightgray;
+    stroke: gray;
+}
+
 path {
 	stroke-width: 1.5px;
 	opacity: 0.5;

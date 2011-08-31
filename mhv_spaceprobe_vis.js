@@ -18,13 +18,13 @@ Possible formats from the spaceprobe are:
  Note: all time estimates in brackets seem to be rounded to nearest 15 minutes
 
 Ideas to try:
-	1.  transition so data appears gradually onto graph (and maybe older data fades out?)
-	2.  rectangles with length set to predicted open for open events, actual open for close events
-	3.  create datapoints based on open / close pairs
+	1.  create datapoints based on open / close pairs
 		for example open is terminated by close, or if a close isn't seen, by the
 		subsequent open and just uses predicted open + any extensions. 
-	4.	Change x axis to be dates, not days
-	5.	Possibly try a spiral display of the timeline
+	2.	Change x axis to be dates, not days
+	3.  transition so data appears gradually onto graph (and maybe older data fades out?)
+		way to do this is given in http://mbostock.github.com/d3/tutorial/bar-2.html
+	4.	Possibly try a spiral display of the timeline
 */
 
 var outputFormat = d3.time.format("%Y %m %d %H:%M:%S");
@@ -74,28 +74,30 @@ $(document).ready(function() {
 
 				if (tweetType == "o" || tweetType == "c") {
 					// ignoring extensions for now
+					if (actualOpenPeriod.indexOf("days") == -1 ) {
+					// if actual open period contains "days" discard it as out of range
 				
-					// display the tweets & parsed data
-					$('#tweetsTable').append(
-						'<tr>'
-						+' <td>'
-						+	 tweetDate
-						+' </td>'
-						+' <td>'
-						+	 post.text
-						+' </td>'
-						+' <td>'
-						+ closeTimeEstimate + " /  " + actualOpenPeriod
-						+' </td>'
-						+'</tr>'
-					);
-				
-					var mhv = new Object();
-					mhv.tweetDate = tweetDate;
-					mhv.tweetType = tweetType;
-					mhv.openEstimate = closeTimeEstimate;
-					mhv.actualOpen = actualOpenPeriod;
-					newData.push(mhv); 
+						// display the tweets & parsed data
+						$('#tweetsTable').append(
+							'<tr>'
+							+' <td>'
+							+	 tweetDate
+							+' </td>'
+							+' <td>'
+							+	 post.text
+							+' </td>'
+							+' <td>'
+							+ closeTimeEstimate + " /  " + actualOpenPeriod
+							+' </td>'
+							+'</tr>'
+						);
+						var mhv = new Object();
+						mhv.tweetDate = tweetDate;
+						mhv.tweetType = tweetType;
+						mhv.openEstimate = closeTimeEstimate;
+						mhv.actualOpen = actualOpenPeriod;
+				    	newData.push(mhv); 
+				    }
 				}
 			}
 		});
@@ -123,7 +125,9 @@ function drawGraph(data) {
 	// define x scale (days of week in current version)	
 	// var x = d3.time.scale().domain([new Date(2011, 0, 1), new Date(2011, 11, 31)]).range([0, width]);
 	var monthNames = ["Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-	var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "help"];
+	var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	var hourNames = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+
 	var x = d3.scale.linear() 
 		// .domain([0, data.length])
 		.domain([1, 7])
@@ -250,9 +254,113 @@ function drawGraph(data) {
 		}
 		 return(symType);
 	}
+// Rectangles to show the events
+	var rectangle = graphGroup.selectAll("rect")
+						.data(data);
+	var barWidth = 10;
+	rectangle.enter().append("svg:rect") 
+		.attr("x", function(d) { return x(d.tweetDate.getDay() + 1) - barWidth/2; })
+		.attr("y", function(d) { return y(new Date(2011, 0, 1, d.tweetDate.getHours(), d.tweetDate.getMinutes())); })
+		.attr("width", barWidth)
+		.attr("height", function(d) { return barHeight(d); })
+	    .attr("class", function(d) { return "rect_" + d.tweetType; })
+	    // transform close bars to be above the close time, and if they are up to 2am, move them to end of previous day
+	    .attr("transform", function(d) { return transXY(d)});
+	
+	rectangle.exit().remove();
+
+
+    function transXY(d) {
+     	var xTrans = 0
+     	var yTrans = 0;
+    	if (d.tweetType == "c") {
+ 			if (d.tweetDate.getHours() <= 2) {
+				// could improve this to test if the open period went over midnight
+				// if just after midnight, then move the bar to the end of the previous day…
+				// have to wrap for week as well (not happening at the moment - but no early morning closes on a Sunday)
+  				xTrans =  - (x(3) - x(2));
+  				yTrans =  y(new Date(2011,0,1, 24, 0)) 
+  						- barHeight(d) 
+  						- y(new Date(2011, 0, 1, d.tweetDate.getHours(), d.tweetDate.getMinutes()));
+			} else {
+				// transform bar back by its height
+  			 	yTrans = - (barHeight(d));
+			}
+ 		} 
+  		return  ("translate(" +  xTrans + "," + yTrans + ")");
+    }
+	
+	function barHeight(d) {
+		// positive height if tweetType is open, negative if close
+		// need to map the tweet height onto the timescale
+		var height = 0;
+		var rawheight = (d.tweetType )
+		d.tweetType
+		d.openEstimate
+		d.actualOpen
+		switch (d.tweetType) 
+		{
+		case "c": 
+			// d.actualOpen is expressed in hours or minutes or seconds
+			// can't have negative heights for a svg:rect, so to do bars for actual open need 
+			// to add a transform to move the bar back by it's height
+			if (d.actualOpen.indexOf("minutes") != -1) {
+				var timeBits = d.actualOpen.split(" ");
+				// timeBits[0] will contain open time in minutes
+				height = y(new Date(2011, 0, 1, Math.floor(timeBits[0]/60), (timeBits[0]%60)));
+			} else if (d.actualOpen.indexOf("hours")) {
+				var timeBits = d.actualOpen.split(" ");
+				if (timeBits.length == 3) {
+					// we have format like "4 1/2 hours"
+					// I'm assuming it is always rounded to a 1/2 hour
+					height = y(new Date(2011,0,1, timeBits[0], 30));
+				} else {
+					// we have format like "three hours" or "7 hours"
+					var hourConverted = jQuery.inArray(timeBits[0], hourNames);
+					if (hourConverted != -1) {
+						// it was a text hour name
+						timeBits[0] = hourConverted + 1;
+					}
+					height = y(new Date(2011,0,1, timeBits[0],0));
+				}
+			} else if (d.actualOpen.indexOf("seconds")) {
+					// i think I'll ignore these!
+					height = 0;
+			} else {
+				  	// unexpected time format
+				  	height = 0;
+			}
+			// seems like some of the actual (tweetType = "c") open periods are too long
+			// NEED TO LOOK AT DATA & SEE WHAT IS GOING ON 
+			// truncate at start of day, but only if after 2 am
+			if (d.tweetDate.getHours() >= 2) {
+				var maxHeight = y(new Date(2011, 0, 1, d.tweetDate.getHours(), d.tweetDate.getMinutes())) - y(new Date(2011,0,1,0,0)); 
+				if ( height > maxHeight) {
+					height = maxHeight;				
+				}
+			}
+			
+			break;
+		case "o":
+		    // d.openEstimate is expressed as a time of day
+			 var timeBits = d.openEstimate.split(":");
+			 if (timeBits[0] == 0) {
+			 	// over boundary of 12 midnight! so just make it go to bottom of screen
+			 	// should really create a second bar the following morning going to the predicted close time
+			 	timeBits = ["24", "00"];
+			 }
+			 height = y(new Date(2011, 0, 1, timeBits[0], timeBits[1])) - y(new Date(2011, 0, 1, d.tweetDate.getHours(), d.tweetDate.getMinutes()));
+			break;
+		case "e":
+		// not processing these
+			height = 0;
+		}
+		return height;
+	}
+
 
 // Button to trigger transition between circles and symbols
-	d3.select("#daybreakdown button").on("click", function() {
+	d3.select("#daybreakdown button#symbolToggle").on("click", function() {
  		daychart.selectAll("circle")
  			.transition()
  				.duration(750)
@@ -263,17 +371,34 @@ function drawGraph(data) {
          	.transition()
  	     	  	.duration(750)
  				.style("opacity", (daychart.selectAll("path").style("opacity") == 0.5) ? 1e-6 : 0.5 );
-	   d3.select("#daybreakdown button")
-	   		.text((d3.select("#daybreakdown button").text() == "Show symbols") ? "Show circles" : "Show symbols");
+	   d3.select("#daybreakdown button#symbolToggle")
+	   		.text((d3.select("#daybreakdown button#symbolToggle").text() == "Show symbols") ? "Show circles" : "Show symbols");
   });
   
-// Button to show data
+// Button to show / hide data
 	d3.select("#posts button").on("click", function() {
 		d3.select("#posts table")
 			.style("visibility", (d3.select("#posts table").style("visibility") == "hidden") ? "visible" : "hidden");
 		d3.select("#posts button")
 			.text((d3.select("#posts table").style("visibility") == "visible") ? "Hide data table" : "Show data table");
 	});
-	
+
+// Button to show / hide open estimate bars
+	d3.select("#daybreakdown button#estimatesToggle").on("click", function() {
+		daychart.selectAll("rect.rect_o")
+			.style("visibility", (d3.selectAll("rect.rect_o").style("visibility") == "hidden") ? "visible" : "hidden");
+		d3.select("#daybreakdown button#estimatesToggle")
+	   		.text((d3.select("#daybreakdown button#estimatesToggle").text() == "Show open estimates") ? "Hide open estimates" : "Show open estimates");
+  });
+
+
+// Button to show / hide actual open bars
+	d3.select("#daybreakdown button#actualsToggle").on("click", function() {
+		daychart.selectAll("rect.rect_c")
+			.style("visibility", (d3.selectAll("rect.rect_c").style("visibility") == "hidden") ? "visible" : "hidden");
+		d3.select("#daybreakdown button#actualsToggle")
+	   		.text((d3.select("#daybreakdown button#actualsToggle").text() == "Show actual opens") ? "Hide actual opens" : "Show actual opens");
+  });
+ 	
 }
 
