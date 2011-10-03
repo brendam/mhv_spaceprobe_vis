@@ -2,7 +2,11 @@
 <html>
 <head>
   <meta charset='utf-8'>
-
+ 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="https://raw.github.com/brendam/mhv_spaceprobe_vis/master/lib/jquery-jtwitter/jquery.jtwitter.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/brendam/mhv_spaceprobe_vis/master/lib/d3/d3.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/brendam/mhv_spaceprobe_vis/master/lib/d3/d3.time.js"></script>
+        <script type="text/javascript" src="https://raw.github.com/brendam/mhv_spaceprobe_vis/master/mhv_spaceprobe_vis.js"></script>
   <title>brendam/mhv_spaceprobe_vis @ GitHub</title>
 
   <style type="text/css">
@@ -16,7 +20,7 @@
       margin: 0 auto;
       width: 700px;
     }
-    h1 { font-size: 3.8em; color: #882086; margin-bottom: 3px; }
+    h1 { font-size: 3.8em; color: #f38110; margin-bottom: 3px; }
     h1 .small { font-size: 0.4em; }
     h1 a { text-decoration: none }
     h2 { font-size: 1.5em; color: #882086; }
@@ -28,6 +32,13 @@
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
     .footer { text-align:center; padding-top:30px; font-style: italic; }
   </style>
+  
+<!-- 
+seems like you can't load a style sheet from raw.github.com, it sends text/plain content type and browser won't load it 
+as a style sheet so https://raw.github.com/brendam/mhv_spaceprobe_vis/master/mhv_spaceprobe_vis.css doesn't work
+-->
+  <link rel="stylesheet" type="text/css" href="mhv_spaceprobe_vis.css">
+
 </head>
 
 <body>
@@ -45,46 +56,21 @@
     <h1><a href="http://github.com/brendam/mhv_spaceprobe_vis">mhv_spaceprobe_vis</a>
       <span class="small">by <a href="http://github.com/brendam">brendam</a></span></h1>
 
-    <div class="description">
-      Learning d3.js by visualising open / close data from mhv_spaceprobe tweets
-    </div>
-
     <p>This is a small visualisation project using data from the Make, Hack, Void Space Probe.</p>
 
 	<p>The Space Probe sends out tweets when the MHV hacker space is opened and closed. This project parses them and uses d3 to create a visualisation of the opening and closing times. Used as exercise for learning d3.</p>
-
-<p>This project uses:</p> 
-<ul>
-<li><a href="http://mbostock.github.com/d3/">d3 visualisation library</a> 
-<li><a href="http://plugins.jquery.com/project/jtwitter">jtwitter</a>
-<li><a href="http://jquery.com/">jquery</a>
-</ul>
 
 <p>Feedback/suggestions very welcome!</p>
 
 <p>More information about the MHV Space Probe is available here http://www.makehackvoid.com/projects/space-probe/</p>
 
-<h2>Contact</h2>
-<p>Brenda Moon (brenda@moon.net.au)</p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/brendam/mhv_spaceprobe_vis/zipball/master">zip</a> or
-      <a href="http://github.com/brendam/mhv_spaceprobe_vis/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/brendam/mhv_spaceprobe_vis</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/brendam/mhv_spaceprobe_vis">brendam/mhv_spaceprobe_vis</a>
-    </div>
-
+       <h2>MHV spaceprobe events</h2>
+        <div id="daybreakdown">
+        <button id="symbolToggle">Show circles</button> 
+        <button id="estimatesToggle">Hide open estimates</button>
+        <button id="actualsToggle">Hide actual opens</button><br>
+        </div>
+        <div id="posts">Getting your tweets...</div>
   </div>
-
-  
 </body>
 </html>
