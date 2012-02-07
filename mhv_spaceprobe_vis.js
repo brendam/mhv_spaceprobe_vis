@@ -17,6 +17,13 @@ Possible formats from the spaceprobe are:
  (~hh:mm) is the estimated closing time
  Note: all time estimates in brackets seem to be rounded to nearest 15 minutes
 
+Format of tweets changed on around 20 November 2011. New format:
+	Space is closed (was open 10 hours)
+    Space is closed (was open 159 minutes)
+	Space is open until hh:mm (estimate)
+	Space staying open until hh:mm (estimate)
+	Space Probe here. It gets lonely in this empty space sometimes. Come and keep me company.	
+	
 Ideas to try:
 	1.  create datapoints based on open / close pairs
 		for example open is terminated by close, or if a close isn't seen, by the
@@ -59,8 +66,14 @@ $(document).ready(function() {
 					if (startEstimate != -1 && endEstimate != -1 && startEstimate < endEstimate) {
 						closeTimeEstimate = post.text.substring(startEstimate+2, endEstimate); 
 					}
-					
-				} else if (post.text.indexOf("is now closed") != -1) {
+				} else if (post.text.indexOf('is open') != -1) {
+					tweetType = "o"; // open
+					startEstimate = post.text.indexOf("until ");
+					endEstimate = post.text.indexOf(" (estimate)");
+					if (startEstimate != -1 && endEstimate != -1 && startEstimate < endEstimate) {
+						closeTimeEstimate = post.text.substring(startEstimate+6, endEstimate); 
+					}
+				} else if (post.text.indexOf("is now closed") != -1 || post.text.indexOf("is closed") != -1) {
 					tweetType = "c"; // closed
 					startOpen = post.text.indexOf("(was open ");
 					endOpen = post.text.indexOf(")");
@@ -68,10 +81,10 @@ $(document).ready(function() {
 						actualOpenPeriod = post.text.substring(startOpen+("(was open ").length, endOpen); 
 					}
 
-				} else if (post.text.indexOf("will remain open") != -1) {
+				} else if (post.text.indexOf("will remain open") != -1 || post.text.indexOf("staying open") != -1) {
 					tweetType = "e"; // extend opening time
-				} 
-
+				}
+          
 				if (tweetType == "o" || tweetType == "c") {
 					// ignoring extensions for now
 					if (actualOpenPeriod.indexOf("days") == -1 ) {
